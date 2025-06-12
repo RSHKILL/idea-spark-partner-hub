@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -12,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const SubmitIdea = () => {
   const [idea, setIdea] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [industry, setIndustry] = useState('');
   const [stage, setStage] = useState('');
   const [region, setRegion] = useState('');
@@ -44,16 +46,52 @@ const SubmitIdea = () => {
       return;
     }
 
+    if (!userEmail.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
 
-    // Simulate AI processing
-    setTimeout(() => {
-      toast({
-        title: "Success!",
-        description: "Your business model has been generated successfully",
+    try {
+      console.log("Sending request to Make.com webhook...");
+      
+      const response = await fetch('https://hook.us2.make.com/fyxmlxo47g2urtugzrsihcn7exbvlfr8', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: idea,
+          user_id: userEmail,
+        }),
       });
-      navigate('/business-model/new');
-    }, 3000);
+
+      console.log("Webhook response:", response.status);
+
+      if (response.ok) {
+        toast({
+          title: "Success!",
+          description: "Your business idea has been submitted for AI analysis",
+        });
+        navigate('/business-model/new');
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error sending webhook:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit your idea. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -96,6 +134,22 @@ const SubmitIdea = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <Label htmlFor="email" className="text-base font-medium">
+                      Your Email Address *
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={userEmail}
+                      onChange={(e) => setUserEmail(e.target.value)}
+                      className="mt-2"
+                      disabled={isGenerating}
+                      required
+                    />
+                  </div>
+
                   <div>
                     <Label htmlFor="idea" className="text-base font-medium">
                       Describe your business idea *
@@ -175,11 +229,11 @@ const SubmitIdea = () => {
                     {isGenerating ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Generating Business Model...
+                        Launching Your Idea with AI...
                       </>
                     ) : (
                       <>
-                        Generate Business Model <ArrowRight className="ml-2 w-4 h-4" />
+                        Launch Your Idea with AI <ArrowRight className="ml-2 w-4 h-4" />
                       </>
                     )}
                   </Button>
