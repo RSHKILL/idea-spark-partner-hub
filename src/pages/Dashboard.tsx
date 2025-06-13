@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +31,7 @@ const Dashboard = () => {
       createdAt: "2024-01-10",
       industry: "Education"
     }
-  ]);
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
 
   const getStatusColor = (status: string) => {
     switch (status) {
