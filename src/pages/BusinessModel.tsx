@@ -1,24 +1,94 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Lightbulb, Download, ArrowRight, Users, TrendingUp, Target, DollarSign, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const BusinessModel = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [idea, setIdea] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams();
+  const { toast } = useToast();
 
+  useEffect(() => {
+    fetchIdea();
+  }, [id]);
+
+  const fetchIdea = async () => {
+    if (!id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ideas')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching idea:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load business model",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIdea(data);
+    } catch (error) {
+      console.error('Error fetching idea:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to load business model",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading business model...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!idea) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Lightbulb className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Business Model Not Found</h3>
+          <p className="text-gray-600 mb-4">The requested business model could not be found.</p>
+          <Link to="/dashboard">
+            <Button>Back to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Parse model output or use defaults
   const businessData = {
-    title: "AI-Powered Meal Planning App",
-    summary: "A personalized nutrition platform that creates custom meal plans based on dietary preferences, health goals, and local ingredient availability.",
-    problem: "Busy professionals struggle to maintain healthy eating habits due to time constraints and lack of nutritional knowledge.",
-    solution: "An AI-driven app that automatically generates personalized meal plans, shopping lists, and nutrition tracking with minimal user input.",
-    marketSize: "$12.8B",
-    competitors: ["MyFitnessPal", "Lose It!", "Yazio"],
-    revenueModel: "Freemium with premium subscriptions ($9.99/month)",
+    title: idea.idea_text.length > 60 ? `${idea.idea_text.substring(0, 60)}...` : idea.idea_text,
+    summary: idea.model_output || "AI-generated business model based on your submitted idea.",
+    problem: "Market problem identified through AI analysis",
+    solution: idea.idea_text,
+    marketSize: "$TBD",
+    competitors: ["Market analysis pending"],
+    revenueModel: "Business model recommendations generated",
     mvpSteps: [
       { step: "Market Research & User Interviews", status: "completed", duration: "2 weeks" },
       { step: "Design MVP Wireframes", status: "completed", duration: "1 week" },
