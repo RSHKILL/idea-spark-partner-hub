@@ -22,7 +22,10 @@ const BusinessModel = () => {
   }, [id]);
 
   const fetchIdea = async () => {
-    if (!id) return;
+    if (!id || id === 'new') {
+      setIsLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
