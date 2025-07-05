@@ -76,9 +76,9 @@ const SubmitIdea = () => {
       if (response.ok) {
         toast({
           title: "Success!",
-          description: "Your business idea has been submitted for AI analysis",
+          description: "Your business idea has been submitted! Check your dashboard in a moment to see the AI-generated business model.",
         });
-        navigate('/business-model/new');
+        navigate('/dashboard');
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
