@@ -23,30 +23,57 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkAuthAndFetchIdeas();
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user?.email) {
+          setUserEmail(session.user.email);
+          // Defer the fetchIdeas call to avoid auth callback issues
+          setTimeout(() => {
+            fetchIdeas(session.user.email!);
+          }, 0);
+        } else {
+          setUserEmail(null);
+          setIdeas([]);
+          setIsLoading(false);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+        fetchIdeas(session.user.email);
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const checkAuthAndFetchIdeas = async () => {
+  const handleSignOut = async () => {
     try {
-      // Check if user is authenticated
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user || !user.email) {
-        console.log('No authenticated user found');
-        setIsLoading(false);
-        return;
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to sign out",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Successfully signed out",
+        });
       }
-
-      setUserEmail(user.email);
-      await fetchIdeas(user.email);
     } catch (error) {
-      console.error('Error checking auth:', error);
       toast({
         title: "Error",
-        description: "Failed to load user data",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-      setIsLoading(false);
     }
   };
 
@@ -118,9 +145,20 @@ const Dashboard = () => {
                 AI Advisor
               </Button>
             </Link>
-            <Link to="/profile">
-              <Button variant="ghost">Profile</Button>
-            </Link>
+            {userEmail ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost">Profile</Button>
+                </Link>
+                <Button variant="outline" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline">Sign In</Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -190,7 +228,9 @@ const Dashboard = () => {
                 <p className="text-gray-600 mb-4">
                   You need to be signed in to view and manage your ideas.
                 </p>
-                <Button>Sign In</Button>
+                <Link to="/auth">
+                  <Button>Sign In</Button>
+                </Link>
               </CardContent>
             </Card>
           ) : isLoading ? (

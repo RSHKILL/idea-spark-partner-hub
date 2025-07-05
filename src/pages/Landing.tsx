@@ -1,12 +1,10 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Users, Lightbulb, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Landing = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const features = [
     {
@@ -56,16 +54,12 @@ const Landing = () => {
             <span className="text-xl font-bold text-gray-900">IdeaForge AI</span>
           </div>
           <div className="flex items-center space-x-4">
-            {isLoggedIn ? (
-              <Link to="/dashboard">
-                <Button>Go to Dashboard</Button>
-              </Link>
-            ) : (
-              <>
-                <Button variant="ghost" onClick={() => setIsLoggedIn(true)}>Sign In</Button>
-                <Button onClick={() => setIsLoggedIn(true)}>Get Started</Button>
-              </>
-            )}
+            <Link to="/auth">
+              <Button variant="ghost">Sign In</Button>
+            </Link>
+            <Link to="/auth">
+              <Button>Get Started</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -84,13 +78,14 @@ const Landing = () => {
             execution plans, and smart partner matching.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              onClick={() => setIsLoggedIn(true)}
-            >
-              Launch Your Idea with AI <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
+            <Link to="/auth">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                Launch Your Idea with AI <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
             <Button variant="outline" size="lg">
               Watch Demo
             </Button>
@@ -151,13 +146,14 @@ const Landing = () => {
           <p className="text-xl mb-8 opacity-90">
             Join thousands of entrepreneurs who've launched successful businesses with AI guidance
           </p>
-          <Button 
-            size="lg" 
-            variant="secondary"
-            onClick={() => setIsLoggedIn(true)}
-          >
-            Start Building Now <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+          <Link to="/auth">
+            <Button 
+              size="lg" 
+              variant="secondary"
+            >
+              Start Building Now <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </section>
 

@@ -11,6 +11,7 @@ import BusinessModel from "./pages/BusinessModel";
 import Matchmaking from "./pages/Matchmaking";
 import Profile from "./pages/Profile";
 import AIAdvisor from "./pages/AIAdvisor";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/submit-idea" element={<SubmitIdea />} />
           <Route path="/business-model/:id" element={<BusinessModel />} />
